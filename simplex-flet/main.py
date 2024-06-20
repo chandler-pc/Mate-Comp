@@ -1,4 +1,6 @@
 import flet as ft
+import matplotlib.pyplot as plt
+import numpy as np
 
 class SimplexManager:
     number_variables = 0
@@ -11,6 +13,31 @@ class SimplexManager:
     change_column = []
     change_column_value_min = []
     dual = False
+
+def find_x_r(simplex_manager, index):
+    for i in range(simplex_manager.number_restrictions):
+        if simplex_manager.change_column[i] == "X"+str(index):
+            return simplex_manager.simplex_table[i][-1]
+
+def plot_graph(simplex_manager):
+    x = np.linspace(0, 50, 100)
+    
+    for i in range(simplex_manager.number_restrictions):
+        y = (simplex_manager.restrictions_values[i] - x * simplex_manager.restrictions[i][0]) / simplex_manager.restrictions[i][1]
+        plt.plot(x, y, label=f'Restricción {i + 1}')
+    Z_value = simplex_manager.simplex_table[-1][-1]
+    x = -1*simplex_manager.simplex_table[-1][1] if simplex_manager.simplex_table[-1][1] != 0 else find_x_r(simplex_manager, 1)
+    y = -1*simplex_manager.simplex_table[-1][2] if simplex_manager.simplex_table[-1][2] != 0 else find_x_r(simplex_manager, 2)
+    plt.plot(x, y, 'ro', label=f'Z = {Z_value}')
+
+    plt.xlim(0, 50)
+    plt.ylim(0, 50)
+    plt.xlabel("X1")
+    plt.ylabel("X2")
+    plt.title("Grafica de restricciones")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
 def initial_page(page: ft.Page, simplex_manager: SimplexManager):
     def continue_button_click(e):
@@ -315,6 +342,7 @@ def show_simplex_table(page: ft.Page, simplex_manager: SimplexManager):
                         show_simplex_table(page, simplex_manager)
                         return
             show_final_table_min(page, simplex_manager)
+        
     title = ft.Text(value="Tabla Simplex",
                     style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)
     simplex_datatable = None
@@ -385,6 +413,8 @@ def show_simplex_table(page: ft.Page, simplex_manager: SimplexManager):
             expand=True,
             alignment=ft.alignment.center,
         ), minimum=40))
+    
+    plot_graph(simplex_manager)
 
 def calculate_simplex_max(simplex_manager: SimplexManager):
     pivot_column = 0
@@ -503,6 +533,7 @@ def show_final_table_max(page: ft.Page, simplex_manager: SimplexManager):
             expand=True,
             alignment=ft.alignment.center,
         ), minimum=40))
+    plot_graph(simplex_manager)
     
 def show_final_table_min(page: ft.Page, simplex_manager: SimplexManager):
     title = ft.Text(value="Tabla Simplex Final",
